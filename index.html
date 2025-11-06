@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ISG SG 모델 조회</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dongle&display=swap" rel="stylesheet">
+
+<style>
+  /* ===== 상단(Trace 스타일) ===== */
+  body { font-family:"Segoe UI", Arial, sans-serif; background:#f3f4f6; color:#111827; margin:20px; }
+  .dongle-regular { font-family:"Dongle",sans-serif; font-weight:400; }
+
+  .top-nav{ display:flex; justify-content:flex-end; gap:5px; margin-bottom:5px; }
+  .nav-btn{
+    background:#1e3a5f; color:#fff; border:none; border-radius:8px;
+    padding:4px 10px; height:18px; line-height:18px; cursor:pointer;
+    font-weight:600; font-size:.75rem; text-decoration:none; transition:background .2s;
+  }
+  .nav-btn:hover{ background:#294b7a; }
+
+  h1{
+    font-size:1.5em; background:#1e3a5f; color:#fff;
+    padding:12px 18px; border-radius:8px; display:flex;
+    justify-content:space-between; align-items:flex-end; margin:0 0 12px 0;
+  }
+  .title-left{ font-size:1.6em; line-height:.7; margin-bottom:0; }
+  .subtitle{ font-size:.7em; color:#bcd0f7; opacity:.9; margin-top:2px; display:block; }
+  .date-container{ text-align:right; line-height:1.2; }
+  .version{ font-size:24px; color:#bcd0f7; opacity:.9; }
+
+  /* ===== 본문 라이트 테마 ===== */
+  :root{
+    --panel:#ffffff; --muted:#6b7280; --fg:#111827; --line:#e5e7eb; --accent:#2563eb;
+    --hover:#f9fafb; --input:#ffffff;
+  }
+  .wrap{max-width:1200px;margin:18px auto 28px;padding:0 16px}
+  .sub{color:var(--muted);font-size:13px;margin:6px 0 12px}
+  .bar{
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+    background:var(--panel); border:1px solid var(--line); padding:10px; border-radius:14px;
+    box-shadow:0 2px 6px rgba(0,0,0,.04);
+  }
+  label{font-size:13px;color:#374151;margin-right:6px}
+  select,input{
+    appearance:none;background:var(--input);border:1px solid var(--line);color:var(--fg);
+    padding:10px 12px;border-radius:10px;font-size:14px;
+  }
+  input[type="number"]{width:120px}
+  .btn{cursor:pointer;background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:700}
+  .ghost{background:#ffffff;color:#111827;border:1px solid var(--line)}
+  .tabs{display:flex;gap:8px;margin:14px 0}
+  .tab{
+    padding:8px 12px;border:1px solid var(--line);border-radius:999px;cursor:pointer;
+    background:#fff;color:#374151;font-size:14px
+  }
+  .tab.active{background:var(--accent);border-color:transparent;color:#fff;font-weight:700}
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
+  }
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{border-bottom:1px solid var(--line);padding:10px 8px;text-align:left;vertical-align:top}
+  th{color:#374151;background:#fafafa}
+  tr:hover td{background:var(--hover)}
+  .muted{color:var(--muted)}
+  .right{margin-left:auto}
+  .foot{color:var(--muted);font-size:12px;margin-top:10px}
+</style>
+</head>
+<body>
+
+<!-- 상단 네비 -->
+<div class="top-nav">
+  <a href="https://etech-symantec.github.io/sysinfo" class="nav-btn">🧩 Sysinfo 분석</a>
+  <a href="https://etech-symantec.github.io/trace" class="nav-btn">📄 Trace 분석</a>
+  <a class="nav-btn" href="https://techdocs.broadcom.com/us/en/symantec-security-software/web-and-network-security/integrated-secure-gateway/2-5/About-ISG/manage-applications/Platform-and-Performance-Reference/isg-platform-performance-sg.html" target="_blank" rel="noopener noreferrer">↗ 원본 TechDocs</a>
+</div>
+
+<!-- 헤더 -->
+<h1 class="dongle-regular">
+  <div class="title-left">SSP > ISG > SG 모델 조회<br><span class="subtitle">by 이테크시스템</span></div>
+  <div class="date-container"><div class="version">ver.2025.11.06.01</div></div>
+</h1>
+
+<!-- 본문 -->
+<div class="wrap">
+  <div class="sub">호스트(SSP) 모델을 선택하고, <b>최소 Cores / RAM / Connections</b> 기준으로 필터링하세요. (미지원 0 인스턴스 항목은 자동 제외)</div>
+
+  <!-- 컨트롤 바 -->
+  <div class="bar" id="controlBar">
+    <div>
+      <label for="familySel">플랫폼 그룹</label>
+      <select id="familySel">
+        <option value="S210">S210</option>
+        <option value="S410" selected>S410</option>
+        <option value="S620">S620</option>
+      </select>
+    </div>
+
+    <div id="hostWrap">
+      <label for="hostSel">호스트(SSP) 모델</label>
+      <select id="hostSel"></select>
+    </div>
+
+    <div class="right muted">업데이트: <span id="ts"></span></div>
+  </div>
+
+  <!-- 필터 바 -->
+  <div class="bar" style="margin-top:10px">
+    <div>
+      <label for="minCores">최소 Cores</label>
+      <input id="minCores" type="number" min="0" step="1" placeholder="예: 8">
+    </div>
+    <div>
+      <label for="minRam">최소 RAM(GB)</label>
+      <input id="minRam" type="number" min="0" step="1" placeholder="예: 64">
+    </div>
+    <div>
+      <label for="minConn">최소 Connections</label>
+      <input id="minConn" type="number" min="0" step="1000" placeholder="예: 100000">
+    </div>
+    <button class="btn" id="applyBtn">필터 적용</button>
+    <button class="btn ghost" id="resetBtn">초기화</button>
+  </div>
+
+  <!-- Max Performance (SG 7.3) -->
+  <div class="card" style="margin-top:14px">
+    <h2 style="margin:0 0 10px;font-size:18px">Max Performance (SG 7.3) — <span id="mpTitle"></span></h2>
+    <table id="max73">
+      <thead>
+        <tr><th>SSP</th><th>SG Model</th><th>Instances</th><th>Total Cores</th><th>Total RAM</th><th>Total Disk</th><th>Total Conn</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div id="maxEmpty" class="muted" style="display:none;margin-top:8px">선택한 플랫폼 그룹에 해당하는 최대 성능 추천 구성이 없습니다.</div>
+  </div>
+
+  
+  <!-- 표 -->
+  <div class="card" style="margin-top:14px">
+    <div class="tabs" id="tabsRow" style="display:none"></div>
+    <div id="tblWrap"></div>
+    <div class="foot">
+      * Disk 표기는 “<code>1x200</code>”, “<code>2x100</code>”처럼 드라이브 수 × 용량(GB) 형식입니다.<br>
+      * S410은 하위 모델(10 / 20/20B / 30 / 40/40B)별 <b>Instances Per Appliance</b>가 달라 탭으로 전환하여 확인합니다.
+    </div>
+  </div>
+
+
+</div>
+
+<script>
+/* ---------- 데이터 (동일) ---------- */
+const DATA = {
+  S210:{hosts:["S210-10"],rows:[
+    ["C2S*",2,12,"1x200",15000,{"S210-10":4}],
+    ["C2S-A",2,12,"2x100",15000,{"S210-10":4}],
+    ["C2S-B",2,12,"2x200",15000,{"S210-10":2}],
+    ["C2M*",2,16,"1x200",20000,{"S210-10":3}],
+    ["C2M-A",2,16,"2x100",20000,{"S210-10":3}],
+    ["C2M-B",2,16,"2x200",20000,{"S210-10":3}],
+    ["C2L*",2,20,"1x200",25000,{"S210-10":2}],
+    ["C2L-A",2,20,"2x100",25000,{"S210-10":2}],
+    ["C2L-B",2,20,"2x200",25000,{"S210-10":2}],
+    ["C4S*",4,20,"1x200",25000,{"S210-10":2}],
+    ["C4S-A",4,20,"2x100",25000,{"S210-10":2}],
+    ["C4S-B",4,20,"2x200",25000,{"S210-10":2}],
+    ["C4M*",4,24,"1x200",37500,{"S210-10":2}],
+    ["C4M-A",4,24,"2x100",37500,{"S210-10":2}],
+    ["C4M-B",4,24,"2x200",37500,{"S210-10":2}],
+    ["C4L*",4,32,"1x200",50000,{"S210-10":1}],
+    ["C4L-A",4,32,"2x100",50000,{"S210-10":1}],
+    ["C4L-B",4,32,"2x200",50000,{"S210-10":1}],
+    ["C6S*",6,24,"1x200",37500,{"S210-10":2}],
+    ["C6S-A",6,24,"2x100",37500,{"S210-10":2}],
+    ["C6S-B",6,24,"2x200",37500,{"S210-10":2}],
+    ["C6M",6,40,"2x200",62500,{"S210-10":1}],
+    ["C6L",6,48,"2x200",75000,{"S210-10":1}],
+    ["C8S",8,32,"2x200",50000,{"S210-10":1}],
+    ["C10S",10,40,"2x200",62500,{"S210-10":1}],
+    ["C12S",12,48,"2x200",75000,{"S210-10":1}],
+  ]},
+  S410:{hosts:["S410-10","S410-20/20B","S410-30","S410-40/40B"],rows:[
+    ["C2S*",2,12,"1x200",15000,{"S410-10":2,"S410-20/20B":4,"S410-30":4,"S410-40/40B":8}],
+    ["C2S-A",2,12,"2x100",15000,{"S410-10":2,"S410-20/20B":4,"S410-30":4,"S410-40/40B":8}],
+    ["C2S-B",2,12,"2x200",15000,{"S410-10":1,"S410-20/20B":2,"S410-30":2,"S410-40/40B":4}],
+    ["C2M*",2,16,"1x200",20000,{"S410-10":2,"S410-20/20B":4,"S410-30":4,"S410-40/40B":8}],
+    ["C2M-A",2,16,"2x100",20000,{"S410-10":2,"S410-20/20B":4,"S410-30":4,"S410-40/40B":8}],
+    ["C2M-B",2,16,"2x200",20000,{"S410-10":1,"S410-20/20B":2,"S410-30":3,"S410-40/40B":4}],
+    ["C2L*",2,20,"1x200",25000,{"S410-10":1,"S410-20/20B":4,"S410-30":4,"S410-40/40B":8}],
+    ["C2L-A",2,20,"2x100",25000,{"S410-10":1,"S410-20/20B":4,"S410-30":4,"S410-40/40B":8}],
+    ["C2L-B",2,20,"2x200",25000,{"S410-10":1,"S410-20/20B":2,"S410-30":2,"S410-40/40B":4}],
+    ["C4S*",4,20,"1x200",25000,{"S410-10":1,"S410-20/20B":4,"S410-30":4,"S410-40/40B":8}],
+    ["C4S-A",4,20,"2x100",25000,{"S410-10":1,"S410-20/20B":4,"S410-30":4,"S410-40/40B":8}],
+    ["C4S-B",4,20,"2x200",25000,{"S410-10":1,"S410-20/20B":2,"S410-30":2,"S410-40/40B":4}],
+    ["C4M*",4,24,"1x200",37500,{"S410-10":1,"S410-20/20B":3,"S410-30":4,"S410-40/40B":8}],
+    ["C4M-A",4,24,"2x100",37500,{"S410-10":1,"S410-20/20B":3,"S410-30":4,"S410-40/40B":8}],
+    ["C4M-B",4,24,"2x200",37500,{"S410-10":1,"S410-20/20B":2,"S410-30":2,"S410-40/40B":4}],
+    ["C4L*",4,32,"1x200",50000,{"S410-10":1,"S410-20/20B":2,"S410-30":4,"S410-40/40B":8}],
+    ["C4L-A",4,32,"2x100",50000,{"S410-10":1,"S410-20/20B":2,"S410-30":4,"S410-40/40B":8}],
+    ["C4L-B",4,32,"2x200",50000,{"S410-10":1,"S410-20/20B":2,"S410-30":2,"S410-40/40B":4}],
+    ["C6S*",6,24,"1x200",37500,{"S410-10":1,"S410-20/20B":3,"S410-30":4,"S410-40/40B":8}],
+    ["C6S-A",6,24,"2x100",37500,{"S410-10":1,"S410-20/20B":3,"S410-30":4,"S410-40/40B":8}],
+    ["C6S-B",6,24,"2x200",37500,{"S410-10":1,"S410-20/20B":2,"S410-30":2,"S410-40/40B":4}],
+    ["C6M",6,40,"2x200",62500,{"S410-10":0,"S410-20/20B":2,"S410-30":2,"S410-40/40B":4}],
+    ["C6L",6,48,"2x200",75000,{"S410-10":0,"S410-20/20B":1,"S410-30":2,"S410-40/40B":4}],
+    ["C8S",8,32,"2x200",50000,{"S410-10":1,"S410-20/20B":2,"S410-30":2,"S410-40/40B":4}],
+    ["C8M",8,64,"2x200",100000,{"S410-10":0,"S410-20/20B":1,"S410-30":2,"S410-40/40B":4}],
+    ["C8L",8,80,"2x200",125000,{"S410-10":0,"S410-20/20B":1,"S410-30":2,"S410-40/40B":4}],
+    ["C10S",10,40,"2x200",62500,{"S410-10":0,"S410-20/20B":2,"S410-30":2,"S410-40/40B":4}],
+    ["C10M",10,80,"2x200",125000,{"S410-10":0,"S410-20/20B":1,"S410-30":2,"S410-40/40B":4}],
+    ["C10L",10,96,"2x200",150000,{"S410-10":0,"S410-20/20B":0,"S410-30":1,"S410-40/40B":3}],
+    ["C12S",12,48,"2x200",75000,{"S410-10":0,"S410-20/20B":1,"S410-30":2,"S410-40/40B":4}],
+    ["C12M**",12,96,"2x200",150000,{"S410-10":0,"S410-20/20B":0,"S410-30":1,"S410-40/40B":3}],
+    ["C12L**",12,128,"2x200",200000,{"S410-10":0,"S410-20/20B":0,"S410-30":1,"S410-40/40B":2}],
+    ["C14S",14,64,"2x200",100000,{"S410-10":0,"S410-20/20B":1,"S410-30":2,"S410-40/40B":4}],
+    ["C14M",14,112,"2x200",175000,{"S410-10":0,"S410-20/20B":0,"S410-30":1,"S410-40/40B":2}],
+    ["C14L",14,144,"4x200",225000,{"S410-10":0,"S410-20/20B":0,"S410-30":1,"S410-40/40B":2}],
+    ["C16XS",16,32,"2x200",50000,{"S410-10":1,"S410-20/20B":2,"S410-30":2,"S410-40/40B":4}],
+    ["C16S",16,80,"2x200",125000,{"S410-10":0,"S410-20/20B":1,"S410-30":2,"S410-40/40B":4}],
+    ["C16M",16,128,"4x200",200000,{"S410-10":0,"S410-20/20B":0,"S410-30":1,"S410-40/40B":2}],
+    ["C16L",16,160,"4x200",250000,{"S410-10":0,"S410-20/20B":0,"S410-30":1,"S410-40/40B":2}],
+    ["C20S",20,96,"2x200",150000,{"S410-10":0,"S410-20/20B":0,"S410-30":1,"S410-40/40B":3}],
+    ["C20M",20,144,"4x200",225000,{"S410-10":0,"S410-20/20B":0,"S410-30":1,"S410-40/40B":2}],
+    ["C20L",20,192,"6x200",300000,{"S410-10":0,"S410-20/20B":0,"S410-30":0,"S410-40/40B":1}],
+    ["C24XS",24,80,"2x200",125000,{"S410-10":0,"S410-20/20B":1,"S410-30":2,"S410-40/40B":2}],
+    ["C24S**",24,112,"2x200",175000,{"S410-10":0,"S410-20/20B":0,"S410-30":1,"S410-40/40B":2}],
+    ["C24M",24,160,"4x200",250000,{"S410-10":0,"S410-20/20B":0,"S410-30":1,"S410-40/40B":2}],
+    ["C24L",24,256,"8x200",375000,{"S410-10":0,"S410-20/20B":0,"S410-30":0,"S410-40/40B":1}],
+    ["C28S",28,128,"4x200",200000,{"S410-10":0,"S410-20/20B":0,"S410-30":1,"S410-40/40B":2}],
+    ["C28M",28,192,"6x200",300000,{"S410-10":0,"S410-20/20B":0,"S410-30":0,"S410-40/40B":1}],
+    ["C28L",28,288,"8x200",450000,{"S410-10":0,"S410-20/20B":0,"S410-30":0,"S410-40/40B":1}],
+    ["C32XS",32,80,"2x200",125000,{"S410-10":0,"S410-20/20B":1,"S410-30":1,"S410-40/40B":2}],
+    ["C32S",32,160,"4x200",250000,{"S410-10":0,"S410-20/20B":0,"S410-30":1,"S410-40/40B":2}],
+    ["C32M",32,256,"8x200",400000,{"S410-10":0,"S410-20/20B":0,"S410-30":0,"S410-40/40B":1}],
+    ["C32L",32,320,"8x200",500000,{"S410-10":0,"S410-20/20B":0,"S410-30":0,"S410-40/40B":1}],
+  ]},
+  S620:{hosts:["S620-10"],rows:[
+    ["C2S-B",2,12,"2x400",15000,{"S620-10":16}],
+    ["C2M-B",2,16,"2x400",20000,{"S620-10":16}],
+    ["C2L-B",2,20,"2x400",25000,{"S620-10":16}],
+    ["C4S-B",4,20,"2x400",25000,{"S620-10":16}],
+    ["C4M-B",4,24,"2x400",37500,{"S620-10":16}],
+    ["C4L-B",4,32,"2x400",50000,{"S620-10":16}],
+    ["C6S-B",6,24,"2x400",37500,{"S620-10":16}],
+    ["C6M",6,40,"2x400",62500,{"S620-10":16}],
+    ["C6L",6,48,"2x400",75000,{"S620-10":16}],
+    ["C8S",8,32,"2x400",50000,{"S620-10":14}],
+    ["C8M",8,64,"2x400",100000,{"S620-10":14}],
+    ["C8L",8,80,"2x400",125000,{"S620-10":12}],
+    ["C10S",10,40,"2x400",62500,{"S620-10":11}],
+    ["C10M",10,80,"2x400",125000,{"S620-10":11}],
+    ["C10L",10,96,"2x400",150000,{"S620-10":10}],
+    ["C12S",12,48,"2x400",75000,{"S620-10":9}],
+    ["C12M**",12,96,"2x400",150000,{"S620-10":9}],
+    ["C12L**",12,128,"2x400",200000,{"S620-10":7}],
+    ["C14S",14,64,"2x400",100000,{"S620-10":8}],
+    ["C14M",14,112,"2x400",175000,{"S620-10":8}],
+    ["C14L",14,144,"4x800",225000,{"S620-10":6}],
+    ["C16XS",16,32,"2x400",50000,{"S620-10":7}],
+    ["C16S",16,80,"2x400",125000,{"S620-10":7}],
+    ["C16M",16,128,"4x800",200000,{"S620-10":7}],
+    ["C16L",16,160,"4x800",250000,{"S620-10":6}],
+    ["C20S",20,96,"2x400",150000,{"S620-10":5}],
+    ["C20M",20,144,"4x800",225000,{"S620-10":5}],
+    ["C20L",20,192,"6x1200",300000,{"S620-10":5}],
+    ["C24XS",24,80,"2x400",125000,{"S620-10":4}],
+    ["C24S**",24,112,"2x400",175000,{"S620-10":4}],
+    ["C24M",24,160,"4x800",250000,{"S620-10":4}],
+    ["C24L",24,256,"8x1600",400000,{"S620-10":3}],
+    ["C28S",28,128,"4x800",200000,{"S620-10":4}],
+    ["C28M",28,224,"6x1200",350000,{"S620-10":4}],
+    ["C28L",28,288,"8x1600",450000,{"S620-10":3}],
+    ["C32XS",32,80,"2x400",125000,{"S620-10":3}],
+    ["C32S",32,160,"4x800",250000,{"S620-10":3}],
+    ["C32M",32,256,"8x1600",400000,{"S620-10":3}],
+    ["C32L",32,320,"8x1600",500000,{"S620-10":3}],
+  ]}
+};
+
+const MAX73 = [
+  ["S210-10","C12S",1,12,48,400,75000],
+  ["S410-10","C16XS",1,16,32,400,50000],
+  ["S410-20/20B","C32XS",1,32,80,400,125000],
+  ["S410-30","C24S",2,48,160,800,250000],
+  ["S410-40/40B","C32S",2,64,320,1600,500000],
+  ["S620-10","C28M",4,112,896,4800,1400000],
+];
+
+/* ---------- DOM & 렌더 ---------- */
+const ts=document.getElementById("ts");
+const familySel=document.getElementById("familySel");
+const hostSel=document.getElementById("hostSel");
+const tabsRow=document.getElementById("tabsRow");
+const tblWrap=document.getElementById("tblWrap");
+const mpTitle=document.getElementById("mpTitle");
+const maxEmpty=document.getElementById("maxEmpty");
+const minCores=document.getElementById("minCores");
+const minRam=document.getElementById("minRam");
+const minConn=document.getElementById("minConn");
+ts.textContent=new Date().toISOString().slice(0,10);
+
+function fillHosts(){
+  const fam=familySel.value;
+  hostSel.innerHTML="";
+  DATA[fam].hosts.forEach(h=>{
+    const o=document.createElement("option"); o.value=o.textContent=h; hostSel.appendChild(o);
+  });
+  tabsRow.style.display=fam==="S410"?"":"none";
+  if(fam==="S410") renderTabs();
+}
+function renderTabs(){
+  const fam=familySel.value;
+  tabsRow.innerHTML="";
+  DATA[fam].hosts.forEach((h,i)=>{
+    const b=document.createElement("button");
+    b.className="tab"+(i===hostSel.selectedIndex?" active":"");
+    b.textContent=h;
+    b.addEventListener("click",()=>{ hostSel.selectedIndex=i; renderTable(); renderTabs(); });
+    tabsRow.appendChild(b);
+  });
+}
+function getFilteredRows(rows,host){
+  const minCore=Number(minCores.value||0);
+  const minR=Number(minRam.value||0);
+  const minCon=Number(minConn.value||0);
+  return rows
+    .filter(r=>{const inst=r[5]?.[host]; return inst!=null && inst>0;})
+    .filter(([m,c,r,d,conn])=>{
+      if(minCore && c<minCore) return false;
+      if(minR && r<minR) return false;
+      if(minCon && conn<minCon) return false;
+      return true;
+    });
+}
+function renderTable(){
+  const fam=familySel.value, host=hostSel.value, rows=DATA[fam].rows;
+  const filt=getFilteredRows(rows,host);
+  let html=`
+  <table>
+    <thead>
+      <tr>
+        <th style="width:16%">SG Model</th>
+        <th style="width:10%">Cores</th>
+        <th style="width:12%">RAM (GB)</th>
+        <th style="width:14%">Disk (GB)</th>
+        <th style="width:14%">Connections</th>
+        <th>Instances Per Appliance <span class="muted">(${host})</span></th>
+      </tr>
+    </thead><tbody>`;
+  filt.forEach(([model,cores,ram,disk,conn,instMap])=>{
+    html+=`<tr><td>${model}</td><td>${cores}</td><td>${ram}</td><td>${disk}</td><td>${conn.toLocaleString()}</td><td>${instMap[host]}</td></tr>`;
+  });
+  if(filt.length===0){ html+=`<tr><td colspan="6" class="muted">조건에 해당하는 SG 모델이 없습니다. 필터 값을 조정해 보세요.</td></tr>`; }
+  html+=`</tbody></table>`;
+  tblWrap.innerHTML=html;
+  renderMax73();
+}
+function renderMax73(){
+  const fam=familySel.value; mpTitle.textContent=fam;
+  const tbody=document.querySelector("#max73 tbody"); tbody.innerHTML="";
+  const prefix=fam+"-";
+  const filtered=MAX73.filter(([ssp])=>ssp.startsWith(prefix));
+  if(filtered.length===0){ maxEmpty.style.display=""; }
+  else{
+    maxEmpty.style.display="none";
+    filtered.forEach(([ssp,sg,inst,cores,ram,disk,conn])=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${ssp}</td><td>${sg}</td><td>${inst}</td><td>${cores}</td><td>${ram}</td><td>${disk}</td><td>${conn.toLocaleString()}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+}
+familySel.addEventListener("change",()=>{ fillHosts(); renderTable(); renderTabs(); });
+hostSel.addEventListener("change",()=>{ renderTable(); renderTabs(); });
+document.getElementById("applyBtn").addEventListener("click",()=>renderTable());
+[minCores,minRam,minConn].forEach(el=>el.addEventListener("keydown",e=>{ if(e.key==="Enter") renderTable(); }));
+document.getElementById("resetBtn").addEventListener("click",()=>{
+  minCores.value=""; minRam.value=""; minConn.value=""; renderTable();
+});
+fillHosts(); renderTable(); renderMax73();
+</script>
+</body>
+</html>
