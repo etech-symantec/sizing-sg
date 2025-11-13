@@ -33,6 +33,13 @@
     align-items: flex-end;
     margin-bottom: 5pt;
   }
+  .header-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: #f3f4f6;  /* 필요시 배경 지정 */
+    transition: all 0.25s ease;
+  }
   .title-left{ font-size:1.6em; line-height:.7; margin-bottom:0; }
   .subtitle{ font-size:.7em; color:#bcd0f7; opacity:.9; margin-top:2px; display:block; }
   .date-container{ text-align:right; line-height:1.2; }
@@ -86,6 +93,7 @@
 </head>
 <body>
 
+<div class="header-wrap">
 <!-- 상단 네비 -->
 <div class="top-nav">
   <a href="https://etech-symantec.github.io/sysinfo" class="nav-btn">🧩 Sysinfo 분석</a>
@@ -99,6 +107,7 @@
   <div class="title-left">SSP > ISG > SG 모델 조회<br><span class="subtitle">by 이테크시스템</span></div>
   <div class="date-container"><div class="version">ver.2025.11.06.01</div><p></p></div>
 </h1>
+</div>
 
 <!-- 본문 -->
 <div class="wrap">
