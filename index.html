@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<link rel="stylesheet" href="https://etech-symantec.github.io/style.css" />
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ISG SG 모델 조회</title>
@@ -10,55 +11,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Dongle&display=swap" rel="stylesheet">
 
 <style>
-  a {
-      text-decoration: none !important;
-    }
-  /* ===== 상단(Trace 스타일) ===== */
-  body { font-family:"Segoe UI", Arial, sans-serif; background:#f3f4f6; color:#111827; margin:20px; }
-  .dongle-regular { font-family:"Dongle",sans-serif; font-weight:400; }
-
-  .top-nav{ display:flex; justify-content: space-between; gap:4px; margin-bottom:-10px; }
-  .nav-right {
-      display: flex;
-      gap: 4px;
-    }
-  .nav-btn {
-    background: #1e3a5f; color: white; border: none; border-radius: 8px;
-    padding: 4px 8px; height: 12px; line-height: 10px;
-    cursor: pointer; font-weight: 400; font-size: 0.75rem;
-    text-decoration: none; transition: background 0.2s;
-  }
-  .nav-btn-soon {
-    background: #98A1BC; color: #555879; border: none; border-radius: 8px;
-    padding: 4px 8px; height: 12px; line-height: 10px;
-    cursor: pointer; font-weight: 400; font-size: 0.75rem;
-    text-decoration: none; transition: background 0.2s;
-  }
-  .nav-btn:hover{ background: linear-gradient(135deg, #FF0066, #0046FF); }
-
-  h1 {
-  	font-size: 1.5em;
-    background: #1e3a5f;
-    color: white;
-    padding: 12px 18px;
-    border-radius: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 5pt;
-  }
-  .header-wrap {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    background: #f3f4f6;  /* 필요시 배경 지정 */
-    transition: all 0.25s ease;
-  }
-  .title-left{ font-size:1.6em; line-height:.7; margin-bottom:0; }
-  .subtitle{ font-size:.7em; color:#bcd0f7; opacity:.9; margin-top:2px; display:block; }
-  .date-container{ text-align:right; line-height:1.2; }
-  .version{ font-size:24px; color:#bcd0f7; opacity:.9; }
-
   body {
     font-family: "Segoe UI", Arial, sans-serif;
     background: #f3f4f6;
