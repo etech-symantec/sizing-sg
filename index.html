@@ -57,6 +57,16 @@
   .old-model-row.selected td{background:#dbeafe;font-weight:700}
   .model-select{appearance:none;background:var(--input);border:1px solid var(--line);color:var(--fg);padding:6px 10px;border-radius:8px;font-size:14px;font-weight:700}
   .chart-wrap{margin:14px 0 18px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px}
+  .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.5);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}
+  .modal-box{background:#fff;border-radius:12px;padding:18px 20px 20px;max-width:520px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,0.2)}
+  .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+  .modal-close{border:none;background:transparent;font-size:16px;cursor:pointer;color:#6b7280;line-height:1;padding:4px}
+  .modal-close:hover{color:#111827}
+  .modal-desc{font-size:13px;color:#4b5563;margin:6px 0 14px}
+  .ref-table{width:100%;border-collapse:collapse}
+  .ref-table th,.ref-table td{border:1px solid #ccc;padding:8px 10px;text-align:center;font-size:13px}
+  .ref-table thead th{background:#1e3a5f;color:#fff;font-weight:bold}
+  .ref-table tbody td:first-child{font-weight:700}
 </style>
 </head>
 <body>
@@ -127,7 +137,10 @@
 
   <!-- 비교표 -->
   <div class="card" style="margin-top:14px">
-    <h2 style="margin:0 0 10px;font-size:18px">📊 비교표 (SSL 부하율별 성능 비교)</h2>
+    <h2 style="margin:0 0 10px;font-size:18px;display:flex;align-items:center;gap:8px">
+      📊 비교표 (SSL 부하율별 성능 비교)
+      <button id="refInfoBtn" class="btn ghost" style="font-size:12px;padding:3px 10px;font-weight:400">참고기준</button>
+    </h2>
     <div class="sub" style="margin-top:-4px">기준표에서 구 모델 행을 클릭하거나 아래에서 직접 선택하면, 구 모델 처리량(Mbps 환산)이 SSL 부하율별 계수로 재계산됩니다.</div>
 
     <div class="chart-wrap">
@@ -138,8 +151,8 @@
     <table>
       <thead>
         <tr>
-          <th rowspan="2">Performance</th>
-          <th rowspan="2">
+          <th>Performance</th>
+          <th>
             <select id="oldModelSel" class="model-select">
               <option value="S200-10">S200-10</option>
               <option value="S200-20">S200-20</option>
@@ -153,27 +166,46 @@
               <option value="S500-30" selected>S500-30</option>
             </select>
           </th>
-          <th rowspan="2">SSP-S210-10</th>
-          <th rowspan="2">SSP-S410-20B</th>
-          <th rowspan="2">SSP-S410-40B</th>
-          <th rowspan="2">SSP-S620-10 (추정)</th>
-          <th colspan="4">참고기준 (S500-20)</th>
-        </tr>
-        <tr>
-          <th>수치</th><th>%</th><th>%</th><th>%</th>
+          <th>SSP-S210-10</th>
+          <th>SSP-S410-20B</th>
+          <th>SSP-S410-40B</th>
+          <th>SSP-S620-10 (추정)</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td>0% SSL</td><td id="cmpOld0">2910.4</td><td>975</td><td>2512</td><td>4903</td><td>7500</td><td>553</td><td>165.6%</td><td>63.9%</td><td>32.4%</td></tr>
-        <tr><td>25% SSL</td><td id="cmpOld1">1803.2</td><td>658</td><td>1654</td><td>3323</td><td>4800</td><td>1819</td><td>186.6%</td><td>72.4%</td><td>37.1%</td></tr>
-        <tr><td>50% SSL</td><td id="cmpOld2">1396.8</td><td>573</td><td>1447</td><td>2901</td><td>4200</td><td>1127</td><td>171.3%</td><td>68.1%</td><td>33.9%</td></tr>
-        <tr><td>75% SSL</td><td id="cmpOld3">1065.6</td><td>495</td><td>1240</td><td>2479</td><td>3600</td><td>873</td><td>152.4%</td><td>60.3%</td><td>30.1%</td></tr>
-        <tr><td>100% SSL</td><td id="cmpOld4">884.8</td><td>334</td><td>866</td><td>1705</td><td>2400</td><td>666</td><td>134.5%</td><td>53.7%</td><td>26.9%</td></tr>
+        <tr><td>0% SSL</td><td id="cmpOld0">2910.4</td><td>975</td><td>2512</td><td>4903</td><td>7500</td></tr>
+        <tr><td>25% SSL</td><td id="cmpOld1">1803.2</td><td>658</td><td>1654</td><td>3323</td><td>4800</td></tr>
+        <tr><td>50% SSL</td><td id="cmpOld2">1396.8</td><td>573</td><td>1447</td><td>2901</td><td>4200</td></tr>
+        <tr><td>75% SSL</td><td id="cmpOld3">1065.6</td><td>495</td><td>1240</td><td>2479</td><td>3600</td></tr>
+        <tr><td>100% SSL</td><td id="cmpOld4">884.8</td><td>334</td><td>866</td><td>1705</td><td>2400</td></tr>
       </tbody>
     </table>
     </div>
-    <div class="foot">* SSP 성능 측정 자료를 기반으로 계산된 구 모델 성능 추정치. 구 모델 열은 [선택 모델의 MAX THROUGHPUT] × [SSL 부하율별 계수]로 계산됩니다 (참고기준 S500-20 관련 4개 열은 고정값).</div>
+    <div class="foot">* SSP 성능 측정 자료를 기반으로 계산된 구 모델 성능 추정치. 구 모델 열은 [선택 모델의 MAX THROUGHPUT] × [SSL 부하율별 계수]로 계산됩니다.</div>
   </div>
+  </div>
+
+  <!-- 참고기준 모달 -->
+  <div id="refModalOverlay" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="margin:0;font-size:16px">참고기준</h3>
+        <button id="refModalClose" class="modal-close" aria-label="닫기">✕</button>
+      </div>
+      <p class="modal-desc">구 장비 S500-20의 성능 수치을 신규 SSP 장비 모델별 성능과 비교한 수치</p>
+      <table class="ref-table">
+        <thead>
+          <tr><th>S500-20</th><th>SSP-S210-10</th><th>SSP-S410-20B</th><th>SSP-S410-40B</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1819</td><td>186.6%</td><td>72.4%</td><td>37.1%</td></tr>
+          <tr><td>1127</td><td>171.3%</td><td>68.1%</td><td>33.9%</td></tr>
+          <tr><td>873</td><td>152.4%</td><td>60.3%</td><td>30.1%</td></tr>
+          <tr><td>666</td><td>134.5%</td><td>53.7%</td><td>26.9%</td></tr>
+          <tr><td>553</td><td>165.6%</td><td>63.9%</td><td>32.4%</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <div class="row-2col">
@@ -578,6 +610,15 @@ function updateComparison(model){
 
 oldModelSel.addEventListener("change", ()=> updateComparison(oldModelSel.value));
 baseRows.forEach(r=> r.addEventListener("click", ()=> updateComparison(r.dataset.model)));
+
+/* ---- 참고기준 모달 ---- */
+const refInfoBtn = document.getElementById("refInfoBtn");
+const refModalOverlay = document.getElementById("refModalOverlay");
+const refModalClose = document.getElementById("refModalClose");
+refInfoBtn.addEventListener("click", ()=> refModalOverlay.style.display="flex");
+refModalClose.addEventListener("click", ()=> refModalOverlay.style.display="none");
+refModalOverlay.addEventListener("click", (e)=>{ if(e.target===refModalOverlay) refModalOverlay.style.display="none"; });
+document.addEventListener("keydown", (e)=>{ if(e.key==="Escape") refModalOverlay.style.display="none"; });
 
 updateComparison(oldModelSel.value);
 </script>
