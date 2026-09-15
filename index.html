@@ -17,7 +17,10 @@
     --panel:#ffffff; --muted:#6b7280; --fg:#111827; --line:#e5e7eb; --accent:#2563eb;
     --hover:#f9fafb; --input:#ffffff;
   }
-  .wrap{max-width:1200px;margin:18px auto 28px;padding:0 16px}
+  .wrap{max-width:1600px;margin:18px auto 28px;padding:0 16px}
+  .row-2col{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;margin-top:14px}
+  .row-2col > .card{margin-top:0}
+  @media (max-width:1100px){ .row-2col{grid-template-columns:1fr} }
   .sub{color:var(--muted);font-size:13px;margin:6px 0 12px}
   .bar{
     display:flex;flex-wrap:wrap;gap:10px;align-items:center;
@@ -109,6 +112,7 @@
     <button class="btn ghost" id="resetBtn">초기화</button>
   </div>
 
+  <div class="row-2col">
   <!-- Max Performance (SG 7.3) -->
   <div class="card" style="margin-top:14px">
     <h2 style="margin:0 0 10px;font-size:18px">Max Performance (SG 7.3) — <span id="mpTitle"></span></h2>
@@ -121,9 +125,61 @@
     <div id="maxEmpty" class="muted" style="display:none;margin-top:8px">선택한 플랫폼 그룹에 해당하는 최대 성능 추천 구성이 없습니다.</div>
   </div>
 
-  
-  <!-- 표 -->
+  <!-- 비교표 -->
   <div class="card" style="margin-top:14px">
+    <h2 style="margin:0 0 10px;font-size:18px">📊 비교표 (SSL 부하율별 성능 비교)</h2>
+    <div class="sub" style="margin-top:-4px">기준표에서 구 모델 행을 클릭하거나 아래에서 직접 선택하면, 구 모델 처리량(Mbps 환산)이 SSL 부하율별 계수로 재계산됩니다.</div>
+
+    <div class="chart-wrap">
+      <div id="perfChart"></div>
+    </div>
+
+    <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">Performance</th>
+          <th rowspan="2">
+            <select id="oldModelSel" class="model-select">
+              <option value="S200-10">S200-10</option>
+              <option value="S200-20">S200-20</option>
+              <option value="S200-30">S200-30</option>
+              <option value="S200-40">S200-40</option>
+              <option value="S400-20">S400-20</option>
+              <option value="S400-30">S400-30</option>
+              <option value="S400-40">S400-40</option>
+              <option value="S500-10">S500-10</option>
+              <option value="S500-20">S500-20</option>
+              <option value="S500-30" selected>S500-30</option>
+            </select>
+          </th>
+          <th rowspan="2">SSP-S210-10</th>
+          <th rowspan="2">SSP-S410-20B</th>
+          <th rowspan="2">SSP-S410-40B</th>
+          <th rowspan="2">SSP-S620-10 (추정)</th>
+          <th colspan="4">참고기준 (S500-20)</th>
+        </tr>
+        <tr>
+          <th>수치</th><th>%</th><th>%</th><th>%</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>0% SSL</td><td id="cmpOld0">2910.4</td><td>975</td><td>2512</td><td>4903</td><td>7500</td><td>553</td><td>165.6%</td><td>63.9%</td><td>32.4%</td></tr>
+        <tr><td>25% SSL</td><td id="cmpOld1">1803.2</td><td>658</td><td>1654</td><td>3323</td><td>4800</td><td>1819</td><td>186.6%</td><td>72.4%</td><td>37.1%</td></tr>
+        <tr><td>50% SSL</td><td id="cmpOld2">1396.8</td><td>573</td><td>1447</td><td>2901</td><td>4200</td><td>1127</td><td>171.3%</td><td>68.1%</td><td>33.9%</td></tr>
+        <tr><td>75% SSL</td><td id="cmpOld3">1065.6</td><td>495</td><td>1240</td><td>2479</td><td>3600</td><td>873</td><td>152.4%</td><td>60.3%</td><td>30.1%</td></tr>
+        <tr><td>100% SSL</td><td id="cmpOld4">884.8</td><td>334</td><td>866</td><td>1705</td><td>2400</td><td>666</td><td>134.5%</td><td>53.7%</td><td>26.9%</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="foot">* SSP 성능 측정 자료를 기반으로 계산된 구 모델 성능 추정치. 구 모델 열은 [선택 모델의 MAX THROUGHPUT] × [SSL 부하율별 계수]로 계산됩니다 (참고기준 S500-20 관련 4개 열은 고정값).</div>
+  </div>
+  </div>
+
+  <div class="row-2col">
+  <!-- 표 (모델별 스펙 비교표) -->
+  <div class="card" style="margin-top:14px">
+    <h2 style="margin:0 0 10px;font-size:18px">🔍 모델별 스펙 비교표</h2>
     <div class="tabs" id="tabsRow" style="display:none"></div>
     <div id="tblWrap"></div>
     <div class="foot">
@@ -176,55 +232,6 @@
     </table>
     </div>
   </div>
-
-  <!-- 비교표 -->
-  <div class="card" style="margin-top:14px">
-    <h2 style="margin:0 0 10px;font-size:18px">📊 비교표 (SSL 부하율별 성능 비교)</h2>
-    <div class="sub" style="margin-top:-4px">기준표에서 구 모델 행을 클릭하거나 아래에서 직접 선택하면, 구 모델 처리량(Mbps 환산)이 SSL 부하율별 계수로 재계산됩니다.</div>
-
-    <div class="chart-wrap">
-      <div id="perfChart"></div>
-    </div>
-
-    <div style="overflow-x:auto;">
-    <table>
-      <thead>
-        <tr>
-          <th rowspan="2">Performance</th>
-          <th rowspan="2">
-            <select id="oldModelSel" class="model-select">
-              <option value="S200-10">S200-10</option>
-              <option value="S200-20">S200-20</option>
-              <option value="S200-30">S200-30</option>
-              <option value="S200-40">S200-40</option>
-              <option value="S400-20">S400-20</option>
-              <option value="S400-30">S400-30</option>
-              <option value="S400-40">S400-40</option>
-              <option value="S500-10">S500-10</option>
-              <option value="S500-20">S500-20</option>
-              <option value="S500-30" selected>S500-30</option>
-            </select>
-          </th>
-          <th rowspan="2">SSP-S210-10</th>
-          <th rowspan="2">SSP-S410-20B</th>
-          <th rowspan="2">SSP-S410-40B</th>
-          <th rowspan="2">SSP-S620-10 (추정)</th>
-          <th colspan="4">참고기준 (S500-20)</th>
-        </tr>
-        <tr>
-          <th>수치</th><th>%</th><th>%</th><th>%</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>0% SSL</td><td id="cmpOld0">2910.4</td><td>975</td><td>2512</td><td>4903</td><td>7500</td><td>553</td><td>165.6%</td><td>63.9%</td><td>32.4%</td></tr>
-        <tr><td>25% SSL</td><td id="cmpOld1">1803.2</td><td>658</td><td>1654</td><td>3323</td><td>4800</td><td>1819</td><td>186.6%</td><td>72.4%</td><td>37.1%</td></tr>
-        <tr><td>50% SSL</td><td id="cmpOld2">1396.8</td><td>573</td><td>1447</td><td>2901</td><td>4200</td><td>1127</td><td>171.3%</td><td>68.1%</td><td>33.9%</td></tr>
-        <tr><td>75% SSL</td><td id="cmpOld3">1065.6</td><td>495</td><td>1240</td><td>2479</td><td>3600</td><td>873</td><td>152.4%</td><td>60.3%</td><td>30.1%</td></tr>
-        <tr><td>100% SSL</td><td id="cmpOld4">884.8</td><td>334</td><td>866</td><td>1705</td><td>2400</td><td>666</td><td>134.5%</td><td>53.7%</td><td>26.9%</td></tr>
-      </tbody>
-    </table>
-    </div>
-    <div class="foot">* SSP 성능 측정 자료를 기반으로 계산된 구 모델 성능 추정치. 구 모델 열은 [선택 모델의 MAX THROUGHPUT] × [SSL 부하율별 계수]로 계산됩니다 (참고기준 S500-20 관련 4개 열은 고정값).</div>
   </div>
 
 </div>
@@ -484,7 +491,7 @@ const cmpOldCells = [0,1,2,3,4].map(i=>document.getElementById("cmpOld"+i));
 const baseRows = document.querySelectorAll("#baseTableBody .old-model-row");
 const chartHost = document.getElementById("perfChart");
 
-const SERIES_COLORS = ["#4e79a7","#f28e2b","#e15759","#59a14f","#af7aa1"];
+const SERIES_COLORS = ["#4e79a7","#f28e2b","#e15759","#59a14f","#af7aa1"]; // SSL 0/25/50/75/100%
 
 function computeOldValues(model){
   const t = OLD_MODEL_THROUGHPUT[model] || 0;
@@ -495,23 +502,24 @@ function fmtVal(v){
   return Number.isInteger(v) ? v.toString() : v.toFixed(2);
 }
 
-/* ---- 순수 SVG 그룹 막대그래프 (외부 라이브러리 의존성 없음) ---- */
+/* ---- 순수 SVG 막대그래프 (외부 라이브러리 의존성 없음) ----
+   X축: 장비 모델 / 각 모델 그룹 내 막대: 0%,25%,50%,75%,100% SSL 순서 */
 function renderChart(model){
-  const seriesNames = [model+" (구 모델)","SSP-S210-10","SSP-S410-20B","SSP-S410-40B","SSP-S620-10 (추정)"];
-  const seriesData  = [computeOldValues(model), SSP_210_10, SSP_410_20B, SSP_410_40B, SSP_620_10];
+  const groupNames = [model+" (구 모델)","SSP-S210-10","SSP-S410-20B","SSP-S410-40B","SSP-S620-10 (추정)"];
+  const groupData  = [computeOldValues(model), SSP_210_10, SSP_410_20B, SSP_410_40B, SSP_620_10]; // 각 배열: [0%,25%,50%,75%,100%]
 
-  const W = 900, H = 340;
+  const W = 980, H = 340;
   const padL = 55, padR = 20, padT = 20, padB = 60;
   const plotW = W - padL - padR, plotH = H - padT - padB;
 
-  const maxVal = Math.max(...seriesData.flat());
+  const maxVal = Math.max(...groupData.flat());
   const niceMax = Math.ceil(maxVal/500)*500;
 
-  const groupCount = SSL_LABELS.length;
-  const seriesCount = seriesData.length;
+  const groupCount = groupNames.length;   // 5 장비 모델
+  const barsPerGroup = SSL_LABELS.length; // 5 (0/25/50/75/100%)
   const groupW = plotW / groupCount;
   const barGap = 4;
-  const barW = (groupW - barGap*(seriesCount+1)) / seriesCount;
+  const barW = (groupW - barGap*(barsPerGroup+1)) / barsPerGroup;
 
   const yTicks = 5;
   let gridLines = "";
@@ -527,20 +535,20 @@ function renderChart(model){
   let xLabels = "";
   for(let g=0; g<groupCount; g++){
     const groupX = padL + g*groupW;
-    for(let s=0; s<seriesCount; s++){
-      const v = seriesData[s][g];
+    for(let s=0; s<barsPerGroup; s++){
+      const v = groupData[g][s]; // s: 0%,25%,50%,75%,100% 순서
       const barH = (v/niceMax)*plotH;
       const x = groupX + barGap + s*(barW+barGap);
       const y = padT + plotH - barH;
-      bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" fill="${SERIES_COLORS[s]}"><title>${seriesNames[s]}: ${v.toLocaleString()}</title></rect>`;
-      bars += `<text x="${(x+barW/2).toFixed(1)}" y="${(y-4).toFixed(1)}" font-size="9" fill="#374151" text-anchor="middle">${v>=1000?Math.round(v).toLocaleString():v}</text>`;
+      bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" fill="${SERIES_COLORS[s]}"><title>${groupNames[g]} · ${SSL_LABELS[s]}: ${v.toLocaleString()}</title></rect>`;
+      if(barW>16) bars += `<text x="${(x+barW/2).toFixed(1)}" y="${(y-4).toFixed(1)}" font-size="8" fill="#374151" text-anchor="middle">${v>=1000?Math.round(v).toLocaleString():v}</text>`;
     }
-    xLabels += `<text x="${(groupX+groupW/2).toFixed(1)}" y="${H-padB+18}" font-size="12" fill="#111827" text-anchor="middle">${SSL_LABELS[g]}</text>`;
+    xLabels += `<text x="${(groupX+groupW/2).toFixed(1)}" y="${H-padB+18}" font-size="11" fill="#111827" text-anchor="middle">${groupNames[g]}</text>`;
   }
 
   let legend = "";
-  seriesNames.forEach((name,i)=>{
-    const lx = padL + i*170;
+  SSL_LABELS.forEach((name,i)=>{
+    const lx = padL + i*150;
     legend += `<rect x="${lx}" y="0" width="10" height="10" fill="${SERIES_COLORS[i]}"/>`;
     legend += `<text x="${lx+14}" y="9" font-size="11" fill="#374151">${name}</text>`;
   });
