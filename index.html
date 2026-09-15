@@ -10,7 +10,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 
 <style>
   /* ===== 본문 라이트 테마 ===== */
@@ -184,7 +183,7 @@
     <div class="sub" style="margin-top:-4px">기준표에서 구 모델 행을 클릭하거나 아래에서 직접 선택하면, 구 모델 처리량(Mbps 환산)이 SSL 부하율별 계수로 재계산됩니다.</div>
 
     <div class="chart-wrap">
-      <canvas id="perfChart" height="110"></canvas>
+      <div id="perfChart"></div>
     </div>
 
     <div style="overflow-x:auto;">
@@ -483,8 +482,9 @@ const SSP_620_10  = [7500,4800,4200,3600,2400];
 const oldModelSel = document.getElementById("oldModelSel");
 const cmpOldCells = [0,1,2,3,4].map(i=>document.getElementById("cmpOld"+i));
 const baseRows = document.querySelectorAll("#baseTableBody .old-model-row");
+const chartHost = document.getElementById("perfChart");
 
-let perfChart = null;
+const SERIES_COLORS = ["#4e79a7","#f28e2b","#e15759","#59a14f","#af7aa1"];
 
 function computeOldValues(model){
   const t = OLD_MODEL_THROUGHPUT[model] || 0;
@@ -495,6 +495,69 @@ function fmtVal(v){
   return Number.isInteger(v) ? v.toString() : v.toFixed(2);
 }
 
+/* ---- 순수 SVG 그룹 막대그래프 (외부 라이브러리 의존성 없음) ---- */
+function renderChart(model){
+  const seriesNames = [model+" (구 모델)","SSP-S210-10","SSP-S410-20B","SSP-S410-40B","SSP-S620-10 (추정)"];
+  const seriesData  = [computeOldValues(model), SSP_210_10, SSP_410_20B, SSP_410_40B, SSP_620_10];
+
+  const W = 900, H = 340;
+  const padL = 55, padR = 20, padT = 20, padB = 60;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+
+  const maxVal = Math.max(...seriesData.flat());
+  const niceMax = Math.ceil(maxVal/500)*500;
+
+  const groupCount = SSL_LABELS.length;
+  const seriesCount = seriesData.length;
+  const groupW = plotW / groupCount;
+  const barGap = 4;
+  const barW = (groupW - barGap*(seriesCount+1)) / seriesCount;
+
+  const yTicks = 5;
+  let gridLines = "";
+  let yLabels = "";
+  for(let i=0;i<=yTicks;i++){
+    const val = niceMax * i / yTicks;
+    const y = padT + plotH - (val/niceMax)*plotH;
+    gridLines += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#e5e7eb" stroke-width="1"/>`;
+    yLabels += `<text x="${padL-8}" y="${y+4}" font-size="11" fill="#6b7280" text-anchor="end">${Math.round(val).toLocaleString()}</text>`;
+  }
+
+  let bars = "";
+  let xLabels = "";
+  for(let g=0; g<groupCount; g++){
+    const groupX = padL + g*groupW;
+    for(let s=0; s<seriesCount; s++){
+      const v = seriesData[s][g];
+      const barH = (v/niceMax)*plotH;
+      const x = groupX + barGap + s*(barW+barGap);
+      const y = padT + plotH - barH;
+      bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" fill="${SERIES_COLORS[s]}"><title>${seriesNames[s]}: ${v.toLocaleString()}</title></rect>`;
+      bars += `<text x="${(x+barW/2).toFixed(1)}" y="${(y-4).toFixed(1)}" font-size="9" fill="#374151" text-anchor="middle">${v>=1000?Math.round(v).toLocaleString():v}</text>`;
+    }
+    xLabels += `<text x="${(groupX+groupW/2).toFixed(1)}" y="${H-padB+18}" font-size="12" fill="#111827" text-anchor="middle">${SSL_LABELS[g]}</text>`;
+  }
+
+  let legend = "";
+  seriesNames.forEach((name,i)=>{
+    const lx = padL + i*170;
+    legend += `<rect x="${lx}" y="0" width="10" height="10" fill="${SERIES_COLORS[i]}"/>`;
+    legend += `<text x="${lx+14}" y="9" font-size="11" fill="#374151">${name}</text>`;
+  });
+
+  chartHost.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H+24}" width="100%" style="max-width:${W}px;display:block;margin:0 auto;font-family:inherit">
+      <g transform="translate(0,4)">${legend}</g>
+      <g transform="translate(0,24)">
+        ${gridLines}${yLabels}
+        <line x1="${padL}" y1="${padT+plotH}" x2="${W-padR}" y2="${padT+plotH}" stroke="#9ca3af" stroke-width="1.5"/>
+        ${bars}
+        ${xLabels}
+        <text x="${(padL-40)}" y="${padT+plotH/2}" font-size="11" fill="#6b7280" text-anchor="middle" transform="rotate(-90 ${padL-40} ${padT+plotH/2})">Throughput (Mbps)</text>
+      </g>
+    </svg>`;
+}
+
 function updateComparison(model){
   const vals = computeOldValues(model);
   vals.forEach((v,i)=> cmpOldCells[i].textContent = fmtVal(v));
@@ -502,39 +565,12 @@ function updateComparison(model){
   baseRows.forEach(r=> r.classList.toggle("selected", r.dataset.model===model));
   if(oldModelSel.value!==model) oldModelSel.value = model;
 
-  if(perfChart){
-    perfChart.data.datasets[0].label = model+" (구 모델)";
-    perfChart.data.datasets[0].data = vals;
-    perfChart.update();
-  }
-}
-
-function initChart(model){
-  const ctx = document.getElementById("perfChart").getContext("2d");
-  perfChart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: SSL_LABELS,
-      datasets: [
-        { label: model+" (구 모델)", data: computeOldValues(model), backgroundColor:"#4e79a7" },
-        { label: "SSP-S210-10",      data: SSP_210_10,  backgroundColor:"#f28e2b" },
-        { label: "SSP-S410-20B",     data: SSP_410_20B, backgroundColor:"#e15759" },
-        { label: "SSP-S410-40B",     data: SSP_410_40B, backgroundColor:"#59a14f" },
-        { label: "SSP-S620-10 (추정)",data: SSP_620_10,  backgroundColor:"#af7aa1" },
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins:{ legend:{ position:"bottom" }, title:{ display:false } },
-      scales:{ y:{ beginAtZero:true, title:{ display:true, text:"Throughput (Mbps)" } } }
-    }
-  });
+  renderChart(model);
 }
 
 oldModelSel.addEventListener("change", ()=> updateComparison(oldModelSel.value));
 baseRows.forEach(r=> r.addEventListener("click", ()=> updateComparison(r.dataset.model)));
 
-initChart(oldModelSel.value);
 updateComparison(oldModelSel.value);
 </script>
 </body>
