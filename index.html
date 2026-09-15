@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 
 <style>
   /* ===== 본문 라이트 테마 ===== */
@@ -49,6 +50,11 @@
   .muted{color:var(--muted)}
   .right{margin-left:auto}
   .foot{color:var(--muted);font-size:12px;margin-top:10px}
+  .old-model-row{cursor:pointer}
+  .old-model-row:hover td{background:#eef4ff}
+  .old-model-row.selected td{background:#dbeafe;font-weight:700}
+  .model-select{appearance:none;background:var(--input);border:1px solid var(--line);color:var(--fg);padding:6px 10px;border-radius:8px;font-size:14px;font-weight:700}
+  .chart-wrap{margin:14px 0 18px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px}
 </style>
 </head>
 <body>
@@ -135,17 +141,17 @@
       <thead>
         <tr><th>OLD MODEL</th><th>MAX CONNECTION</th><th>NEW SSP</th><th>APPLICATION</th><th>MAX THROUGHPUT</th><th>RECOMMENDED THROUGHPUT</th></tr>
       </thead>
-      <tbody>
-        <tr><td>S200-10</td><td>2,000</td><td>S410-10</td><td>C2S</td><td>30</td><td>15</td></tr>
-        <tr><td>S200-20</td><td>6,000</td><td>S410-10</td><td>C2S</td><td>60</td><td>30</td></tr>
-        <tr><td>S200-30</td><td>13,000</td><td>S410-10</td><td>C2S</td><td>120</td><td>60</td></tr>
-        <tr><td>S200-40</td><td>25,000</td><td>S410-10</td><td>C2L</td><td>250</td><td>125</td></tr>
-        <tr><td>S400-20</td><td>30,000</td><td>S410-10</td><td>C4M</td><td>300</td><td>150</td></tr>
-        <tr><td>S400-30</td><td>70,000</td><td>S410-20</td><td>C8M</td><td>500</td><td>250</td></tr>
-        <tr><td>S400-40</td><td>125,000</td><td>S410-30</td><td>C8L</td><td>1000</td><td>500</td></tr>
-        <tr><td>S500-10</td><td>150,000</td><td>S410-30</td><td>C16M</td><td>1200</td><td>600</td></tr>
-        <tr><td>S500-20</td><td>250,000</td><td>S410-30</td><td>C16L</td><td>2500</td><td>1250</td></tr>
-        <tr><td>S500-30</td><td>350,000</td><td>S410-40</td><td>C24L</td><td>4000</td><td>2000</td></tr>
+      <tbody id="baseTableBody">
+        <tr class="old-model-row" data-model="S200-10"><td>S200-10</td><td>2,000</td><td>S410-10</td><td>C2S</td><td>30</td><td>15</td></tr>
+        <tr class="old-model-row" data-model="S200-20"><td>S200-20</td><td>6,000</td><td>S410-10</td><td>C2S</td><td>60</td><td>30</td></tr>
+        <tr class="old-model-row" data-model="S200-30"><td>S200-30</td><td>13,000</td><td>S410-10</td><td>C2S</td><td>120</td><td>60</td></tr>
+        <tr class="old-model-row" data-model="S200-40"><td>S200-40</td><td>25,000</td><td>S410-10</td><td>C2L</td><td>250</td><td>125</td></tr>
+        <tr class="old-model-row" data-model="S400-20"><td>S400-20</td><td>30,000</td><td>S410-10</td><td>C4M</td><td>300</td><td>150</td></tr>
+        <tr class="old-model-row" data-model="S400-30"><td>S400-30</td><td>70,000</td><td>S410-20</td><td>C8M</td><td>500</td><td>250</td></tr>
+        <tr class="old-model-row" data-model="S400-40"><td>S400-40</td><td>125,000</td><td>S410-30</td><td>C8L</td><td>1000</td><td>500</td></tr>
+        <tr class="old-model-row" data-model="S500-10"><td>S500-10</td><td>150,000</td><td>S410-30</td><td>C16M</td><td>1200</td><td>600</td></tr>
+        <tr class="old-model-row" data-model="S500-20"><td>S500-20</td><td>250,000</td><td>S410-30</td><td>C16L</td><td>2500</td><td>1250</td></tr>
+        <tr class="old-model-row" data-model="S500-30"><td>S500-30</td><td>350,000</td><td>S410-40</td><td>C24L</td><td>4000</td><td>2000</td></tr>
         <tr><td>SWG V100</td><td>10,000</td><td>S410-10</td><td>C2S</td><td class="muted">-</td><td class="muted">-</td></tr>
         <tr><td>SWG V100</td><td>12,500</td><td>S410-10</td><td>C2S</td><td class="muted">-</td><td class="muted">-</td></tr>
         <tr><td>SG-VA-C1S</td><td>3,500</td><td>S410-10</td><td>C2S</td><td class="muted">-</td><td class="muted">-</td></tr>
@@ -175,12 +181,31 @@
   <!-- 비교표 -->
   <div class="card" style="margin-top:14px">
     <h2 style="margin:0 0 10px;font-size:18px">📊 비교표 (SSL 부하율별 성능 비교)</h2>
+    <div class="sub" style="margin-top:-4px">기준표에서 구 모델 행을 클릭하거나 아래에서 직접 선택하면, 구 모델 처리량(Mbps 환산)이 SSL 부하율별 계수로 재계산됩니다.</div>
+
+    <div class="chart-wrap">
+      <canvas id="perfChart" height="110"></canvas>
+    </div>
+
     <div style="overflow-x:auto;">
     <table>
       <thead>
         <tr>
           <th rowspan="2">Performance</th>
-          <th rowspan="2">S400-20</th>
+          <th rowspan="2">
+            <select id="oldModelSel" class="model-select">
+              <option value="S200-10">S200-10</option>
+              <option value="S200-20">S200-20</option>
+              <option value="S200-30">S200-30</option>
+              <option value="S200-40">S200-40</option>
+              <option value="S400-20">S400-20</option>
+              <option value="S400-30">S400-30</option>
+              <option value="S400-40">S400-40</option>
+              <option value="S500-10">S500-10</option>
+              <option value="S500-20">S500-20</option>
+              <option value="S500-30" selected>S500-30</option>
+            </select>
+          </th>
           <th rowspan="2">SSP-S210-10</th>
           <th rowspan="2">SSP-S410-20B</th>
           <th rowspan="2">SSP-S410-40B</th>
@@ -192,15 +217,15 @@
         </tr>
       </thead>
       <tbody>
-        <tr><td>0% SSL</td><td>218.28</td><td>975</td><td>2512</td><td>4903</td><td>7500</td><td>553</td><td>165.6%</td><td>63.9%</td><td>32.4%</td></tr>
-        <tr><td>25% SSL</td><td>135.24</td><td>658</td><td>1654</td><td>3323</td><td>4800</td><td>1819</td><td>186.6%</td><td>72.4%</td><td>37.1%</td></tr>
-        <tr><td>50% SSL</td><td>104.76</td><td>573</td><td>1447</td><td>2901</td><td>4200</td><td>1127</td><td>171.3%</td><td>68.1%</td><td>33.9%</td></tr>
-        <tr><td>75% SSL</td><td>79.82</td><td>495</td><td>1240</td><td>2479</td><td>3600</td><td>873</td><td>152.4%</td><td>60.3%</td><td>30.1%</td></tr>
-        <tr><td>100% SSL</td><td>66.36</td><td>334</td><td>866</td><td>1705</td><td>2400</td><td>666</td><td>134.5%</td><td>53.7%</td><td>26.9%</td></tr>
+        <tr><td>0% SSL</td><td id="cmpOld0">2910.4</td><td>975</td><td>2512</td><td>4903</td><td>7500</td><td>553</td><td>165.6%</td><td>63.9%</td><td>32.4%</td></tr>
+        <tr><td>25% SSL</td><td id="cmpOld1">1803.2</td><td>658</td><td>1654</td><td>3323</td><td>4800</td><td>1819</td><td>186.6%</td><td>72.4%</td><td>37.1%</td></tr>
+        <tr><td>50% SSL</td><td id="cmpOld2">1396.8</td><td>573</td><td>1447</td><td>2901</td><td>4200</td><td>1127</td><td>171.3%</td><td>68.1%</td><td>33.9%</td></tr>
+        <tr><td>75% SSL</td><td id="cmpOld3">1065.6</td><td>495</td><td>1240</td><td>2479</td><td>3600</td><td>873</td><td>152.4%</td><td>60.3%</td><td>30.1%</td></tr>
+        <tr><td>100% SSL</td><td id="cmpOld4">884.8</td><td>334</td><td>866</td><td>1705</td><td>2400</td><td>666</td><td>134.5%</td><td>53.7%</td><td>26.9%</td></tr>
       </tbody>
     </table>
     </div>
-    <div class="foot">* SSP 성능 측정 자료를 기반으로 계산된 구 모델 성능 추정치</div>
+    <div class="foot">* SSP 성능 측정 자료를 기반으로 계산된 구 모델 성능 추정치. 구 모델 열은 [선택 모델의 MAX THROUGHPUT] × [SSL 부하율별 계수]로 계산됩니다 (참고기준 S500-20 관련 4개 열은 고정값).</div>
   </div>
 
 </div>
@@ -435,6 +460,82 @@ document.getElementById("resetBtn").addEventListener("click",()=>{
   minCores.value=""; minRam.value=""; minConn.value=""; renderTable();
 });
 fillHosts(); renderTable(); renderMax73();
+</script>
+
+<script>
+/* ---------- 기준표 ↔ 비교표 상호작용 (구글시트 로직 그대로 적용) ---------- */
+// 기준표의 MAX THROUGHPUT (구글시트 E열)
+const OLD_MODEL_THROUGHPUT = {
+  "S200-10":30, "S200-20":60, "S200-30":120, "S200-40":250,
+  "S400-20":300, "S400-30":500, "S400-40":1000,
+  "S500-10":1200, "S500-20":2500, "S500-30":4000
+};
+// SSL 부하율별 고정 계수 (구글시트 비교표 실측값 역산: S400-20/S500-30 두 케이스 모두 정확히 일치)
+const SSL_RATIOS = [0.7276, 0.4508, 0.3492, 0.2664, 0.2212]; // 0/25/50/75/100%
+const SSL_LABELS = ["0% SSL","25% SSL","50% SSL","75% SSL","100% SSL"];
+
+// 고정된 신규 SSP 성능 값 (선택과 무관)
+const SSP_210_10  = [975, 658, 573, 495, 334];
+const SSP_410_20B = [2512,1654,1447,1240,866];
+const SSP_410_40B = [4903,3323,2901,2479,1705];
+const SSP_620_10  = [7500,4800,4200,3600,2400];
+
+const oldModelSel = document.getElementById("oldModelSel");
+const cmpOldCells = [0,1,2,3,4].map(i=>document.getElementById("cmpOld"+i));
+const baseRows = document.querySelectorAll("#baseTableBody .old-model-row");
+
+let perfChart = null;
+
+function computeOldValues(model){
+  const t = OLD_MODEL_THROUGHPUT[model] || 0;
+  return SSL_RATIOS.map(r => Math.round(t*r*100)/100);
+}
+
+function fmtVal(v){
+  return Number.isInteger(v) ? v.toString() : v.toFixed(2);
+}
+
+function updateComparison(model){
+  const vals = computeOldValues(model);
+  vals.forEach((v,i)=> cmpOldCells[i].textContent = fmtVal(v));
+
+  baseRows.forEach(r=> r.classList.toggle("selected", r.dataset.model===model));
+  if(oldModelSel.value!==model) oldModelSel.value = model;
+
+  if(perfChart){
+    perfChart.data.datasets[0].label = model+" (구 모델)";
+    perfChart.data.datasets[0].data = vals;
+    perfChart.update();
+  }
+}
+
+function initChart(model){
+  const ctx = document.getElementById("perfChart").getContext("2d");
+  perfChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: SSL_LABELS,
+      datasets: [
+        { label: model+" (구 모델)", data: computeOldValues(model), backgroundColor:"#4e79a7" },
+        { label: "SSP-S210-10",      data: SSP_210_10,  backgroundColor:"#f28e2b" },
+        { label: "SSP-S410-20B",     data: SSP_410_20B, backgroundColor:"#e15759" },
+        { label: "SSP-S410-40B",     data: SSP_410_40B, backgroundColor:"#59a14f" },
+        { label: "SSP-S620-10 (추정)",data: SSP_620_10,  backgroundColor:"#af7aa1" },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins:{ legend:{ position:"bottom" }, title:{ display:false } },
+      scales:{ y:{ beginAtZero:true, title:{ display:true, text:"Throughput (Mbps)" } } }
+    }
+  });
+}
+
+oldModelSel.addEventListener("change", ()=> updateComparison(oldModelSel.value));
+baseRows.forEach(r=> r.addEventListener("click", ()=> updateComparison(r.dataset.model)));
+
+initChart(oldModelSel.value);
+updateComparison(oldModelSel.value);
 </script>
 </body>
 </html>
