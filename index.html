@@ -67,6 +67,7 @@
   .ref-table th,.ref-table td{border:1px solid #ccc;padding:8px 10px;text-align:center;font-size:13px}
   .ref-table thead th{background:#1e3a5f;color:#fff;font-weight:bold}
   .ref-table tbody td:first-child{font-weight:700}
+  .mp-section-row td{background:#eef2f7;color:#1e3a5f;font-weight:700;text-align:left;padding:8px 10px}
 </style>
 </head>
 <body>
@@ -122,20 +123,7 @@
     <button class="btn ghost" id="resetBtn">초기화</button>
   </div>
 
-  <div class="row-2col">
-  <!-- Max Performance (SG 7.3) -->
-  <div class="card" style="margin-top:14px">
-    <h2 style="margin:0 0 10px;font-size:18px">Max Performance (SG 7.3) — <span id="mpTitle"></span></h2>
-    <table id="max73">
-      <thead>
-        <tr><th>SSP</th><th>SG Model</th><th>Instances</th><th>Total Cores</th><th>Total RAM</th><th>Total Disk</th><th>Total Conn</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <div id="maxEmpty" class="muted" style="display:none;margin-top:8px">선택한 플랫폼 그룹에 해당하는 최대 성능 추천 구성이 없습니다.</div>
-  </div>
-
-  <!-- 비교표 -->
+  <!-- 비교표 (Max Performance 통합) -->
   <div class="card" style="margin-top:14px">
     <h2 style="margin:0 0 10px;font-size:18px;display:flex;align-items:center;gap:8px">
       📊 비교표 (SSL 부하율별 성능 비교)
@@ -173,6 +161,14 @@
         </tr>
       </thead>
       <tbody>
+        <tr class="mp-section-row"><td colspan="6">Max Performance (SG 7.3) 추천 구성</td></tr>
+        <tr><td>SG Model</td><td class="muted">-</td><td>C12S</td><td>C32XS</td><td>C32S</td><td>C28M</td></tr>
+        <tr><td>Instances</td><td class="muted">-</td><td>1</td><td>1</td><td>2</td><td>4</td></tr>
+        <tr><td>Total Cores</td><td class="muted">-</td><td>12</td><td>32</td><td>64</td><td>112</td></tr>
+        <tr><td>Total RAM</td><td class="muted">-</td><td>48</td><td>80</td><td>320</td><td>896</td></tr>
+        <tr><td>Total Disk</td><td class="muted">-</td><td>400</td><td>400</td><td>1600</td><td>4800</td></tr>
+        <tr><td>Total Connection</td><td class="muted">-</td><td>75,000</td><td>125,000</td><td>500,000</td><td>1,400,000</td></tr>
+        <tr class="mp-section-row"><td colspan="6">SSL 부하율별 처리량 (Mbps)</td></tr>
         <tr><td>0% SSL</td><td id="cmpOld0">2910.4</td><td>975</td><td>2512</td><td>4903</td><td>7500</td></tr>
         <tr><td>25% SSL</td><td id="cmpOld1">1803.2</td><td>658</td><td>1654</td><td>3323</td><td>4800</td></tr>
         <tr><td>50% SSL</td><td id="cmpOld2">1396.8</td><td>573</td><td>1447</td><td>2901</td><td>4200</td></tr>
@@ -182,7 +178,6 @@
     </table>
     </div>
     <div class="foot">* SSP 성능 측정 자료를 기반으로 계산된 구 모델 성능 추정치. 구 모델 열은 [선택 모델의 MAX THROUGHPUT] × [SSL 부하율별 계수]로 계산됩니다.</div>
-  </div>
   </div>
 
   <!-- 참고기준 모달 -->
@@ -397,23 +392,12 @@ const DATA = {
   ]}
 };
 
-const MAX73 = [
-  ["S210-10","C12S",1,12,48,400,75000],
-  ["S410-10","C16XS",1,16,32,400,50000],
-  ["S410-20/20B","C32XS",1,32,80,400,125000],
-  ["S410-30","C24S",2,48,160,800,250000],
-  ["S410-40/40B","C32S",2,64,320,1600,500000],
-  ["S620-10","C28M",4,112,896,4800,1400000],
-];
-
 /* ---------- DOM & 렌더 ---------- */
 const ts=document.getElementById("ts");
 const familySel=document.getElementById("familySel");
 const hostSel=document.getElementById("hostSel");
 const tabsRow=document.getElementById("tabsRow");
 const tblWrap=document.getElementById("tblWrap");
-const mpTitle=document.getElementById("mpTitle");
-const maxEmpty=document.getElementById("maxEmpty");
 const minCores=document.getElementById("minCores");
 const minRam=document.getElementById("minRam");
 const minConn=document.getElementById("minConn");
@@ -473,22 +457,6 @@ function renderTable(){
   if(filt.length===0){ html+=`<tr><td colspan="6" class="muted">조건에 해당하는 SG 모델이 없습니다. 필터 값을 조정해 보세요.</td></tr>`; }
   html+=`</tbody></table>`;
   tblWrap.innerHTML=html;
-  renderMax73();
-}
-function renderMax73(){
-  const fam=familySel.value; mpTitle.textContent=fam;
-  const tbody=document.querySelector("#max73 tbody"); tbody.innerHTML="";
-  const prefix=fam+"-";
-  const filtered=MAX73.filter(([ssp])=>ssp.startsWith(prefix));
-  if(filtered.length===0){ maxEmpty.style.display=""; }
-  else{
-    maxEmpty.style.display="none";
-    filtered.forEach(([ssp,sg,inst,cores,ram,disk,conn])=>{
-      const tr=document.createElement("tr");
-      tr.innerHTML=`<td>${ssp}</td><td>${sg}</td><td>${inst}</td><td>${cores}</td><td>${ram}</td><td>${disk}</td><td>${conn.toLocaleString()}</td>`;
-      tbody.appendChild(tr);
-    });
-  }
 }
 familySel.addEventListener("change",()=>{ fillHosts(); renderTable(); renderTabs(); });
 hostSel.addEventListener("change",()=>{ renderTable(); renderTabs(); });
@@ -497,7 +465,7 @@ document.getElementById("applyBtn").addEventListener("click",()=>renderTable());
 document.getElementById("resetBtn").addEventListener("click",()=>{
   minCores.value=""; minRam.value=""; minConn.value=""; renderTable();
 });
-fillHosts(); renderTable(); renderMax73();
+fillHosts(); renderTable();
 </script>
 
 <script>
