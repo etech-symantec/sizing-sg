@@ -127,6 +127,81 @@
     </div>
   </div>
 
+  <!-- 기준표 -->
+  <div class="card" style="margin-top:14px">
+    <h2 style="margin:0 0 10px;font-size:18px">📋 기준표 (구 모델 → 신규 SSP 매핑)</h2>
+    <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr><th>OLD MODEL</th><th>MAX CONNECTION</th><th>NEW SSP</th><th>APPLICATION</th><th>MAX THROUGHPUT</th><th>RECOMMENDED THROUGHPUT</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>S200-10</td><td>2,000</td><td>S410-10</td><td>C2S</td><td>30</td><td>15</td></tr>
+        <tr><td>S200-20</td><td>6,000</td><td>S410-10</td><td>C2S</td><td>60</td><td>30</td></tr>
+        <tr><td>S200-30</td><td>13,000</td><td>S410-10</td><td>C2S</td><td>120</td><td>60</td></tr>
+        <tr><td>S200-40</td><td>25,000</td><td>S410-10</td><td>C2L</td><td>250</td><td>125</td></tr>
+        <tr><td>S400-20</td><td>30,000</td><td>S410-10</td><td>C4M</td><td>300</td><td>150</td></tr>
+        <tr><td>S400-30</td><td>70,000</td><td>S410-20</td><td>C8M</td><td>500</td><td>250</td></tr>
+        <tr><td>S400-40</td><td>125,000</td><td>S410-30</td><td>C8L</td><td>1000</td><td>500</td></tr>
+        <tr><td>S500-10</td><td>150,000</td><td>S410-30</td><td>C16M</td><td>1200</td><td>600</td></tr>
+        <tr><td>S500-20</td><td>250,000</td><td>S410-30</td><td>C16L</td><td>2500</td><td>1250</td></tr>
+        <tr><td>S500-30</td><td>350,000</td><td>S410-40</td><td>C24L</td><td>4000</td><td>2000</td></tr>
+        <tr><td>SWG V100</td><td>10,000</td><td>S410-10</td><td>C2S</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SWG V100</td><td>12,500</td><td>S410-10</td><td>C2S</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C1S</td><td>3,500</td><td>S410-10</td><td>C2S</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C1M</td><td>9,000</td><td>S410-10</td><td>C2S</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C1L</td><td>15,000</td><td>S410-10</td><td>C2S</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C2S</td><td>15,000</td><td>S410-10</td><td>C2S</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C2M</td><td>20,000</td><td>S410-10</td><td>C2M</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C2L</td><td>25,000</td><td>S410-10</td><td>C2L</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C4S</td><td>25,000</td><td>S410-10</td><td>C4S</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C4M</td><td>37,500</td><td>S410-10</td><td>C4M</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C4L</td><td>50,000</td><td>S410-10</td><td>C4L</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C8S</td><td>50,000</td><td>S410-10</td><td>C8S</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C8M</td><td>87,500</td><td>S410-20</td><td>C8M</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C8L</td><td>125,000</td><td>S410-30</td><td>C8L</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C16XS*</td><td>50,000</td><td>S410-10</td><td>C16XS</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C16S</td><td>125,000</td><td>S410-30</td><td>C16S</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C16M</td><td>187,500</td><td>S410-30</td><td>C16M</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C16L</td><td>250,000</td><td>S410-30</td><td>C16L</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C24S*</td><td>125,000</td><td>S410-30</td><td>C24S</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C24M*</td><td>250,000</td><td>S410-40</td><td>C24M</td><td class="muted">-</td><td class="muted">-</td></tr>
+        <tr><td>SG-VA-C24L*</td><td>375,000</td><td>S410-40</td><td>C24L</td><td class="muted">-</td><td class="muted">-</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- 비교표 -->
+  <div class="card" style="margin-top:14px">
+    <h2 style="margin:0 0 10px;font-size:18px">📊 비교표 (SSL 부하율별 성능 비교)</h2>
+    <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">Performance</th>
+          <th rowspan="2">S400-20</th>
+          <th rowspan="2">SSP-S210-10</th>
+          <th rowspan="2">SSP-S410-20B</th>
+          <th rowspan="2">SSP-S410-40B</th>
+          <th rowspan="2">SSP-S620-10 (추정)</th>
+          <th colspan="4">참고기준 (S500-20)</th>
+        </tr>
+        <tr>
+          <th>수치</th><th>%</th><th>%</th><th>%</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>0% SSL</td><td>218.28</td><td>975</td><td>2512</td><td>4903</td><td>7500</td><td>553</td><td>165.6%</td><td>63.9%</td><td>32.4%</td></tr>
+        <tr><td>25% SSL</td><td>135.24</td><td>658</td><td>1654</td><td>3323</td><td>4800</td><td>1819</td><td>186.6%</td><td>72.4%</td><td>37.1%</td></tr>
+        <tr><td>50% SSL</td><td>104.76</td><td>573</td><td>1447</td><td>2901</td><td>4200</td><td>1127</td><td>171.3%</td><td>68.1%</td><td>33.9%</td></tr>
+        <tr><td>75% SSL</td><td>79.82</td><td>495</td><td>1240</td><td>2479</td><td>3600</td><td>873</td><td>152.4%</td><td>60.3%</td><td>30.1%</td></tr>
+        <tr><td>100% SSL</td><td>66.36</td><td>334</td><td>866</td><td>1705</td><td>2400</td><td>666</td><td>134.5%</td><td>53.7%</td><td>26.9%</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="foot">* SSP 성능 측정 자료를 기반으로 계산된 구 모델 성능 추정치</div>
+  </div>
 
 </div>
 
