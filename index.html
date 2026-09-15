@@ -57,6 +57,10 @@
   .old-model-row.selected td{background:#dbeafe;font-weight:700}
   .model-select{appearance:none;background:var(--input);border:1px solid var(--line);color:var(--fg);padding:6px 10px;border-radius:8px;font-size:14px;font-weight:700}
   .chart-wrap{margin:14px 0 18px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px}
+  .cmp-layout{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;align-items:start;margin-top:10px}
+  .cmp-layout .cmp-chart{margin:0}
+  .cmp-layout .cmp-table table{font-size:13px}
+  @media (max-width:1100px){ .cmp-layout{grid-template-columns:1fr} }
   .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.5);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}
   .modal-box{background:#fff;border-radius:12px;padding:18px 20px 20px;max-width:520px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,0.2)}
   .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
@@ -131,52 +135,55 @@
     </h2>
     <div class="sub" style="margin-top:-4px">기준표에서 구 모델 행을 클릭하거나 아래에서 직접 선택하면, 구 모델 처리량(Mbps 환산)이 SSL 부하율별 계수로 재계산됩니다.</div>
 
-    <div class="chart-wrap">
-      <div id="perfChart"></div>
+    <div class="cmp-layout">
+      <div class="cmp-table" style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Performance</th>
+            <th>
+              <select id="oldModelSel" class="model-select">
+                <option value="S200-10">S200-10</option>
+                <option value="S200-20">S200-20</option>
+                <option value="S200-30">S200-30</option>
+                <option value="S200-40">S200-40</option>
+                <option value="S400-20">S400-20</option>
+                <option value="S400-30">S400-30</option>
+                <option value="S400-40">S400-40</option>
+                <option value="S500-10">S500-10</option>
+                <option value="S500-20">S500-20</option>
+                <option value="S500-30" selected>S500-30</option>
+              </select>
+            </th>
+            <th>SSP-S210-10</th>
+            <th>SSP-S410-20B</th>
+            <th>SSP-S410-40B</th>
+            <th>SSP-S620-10 (추정)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="mp-section-row"><td colspan="6">Max Performance (SG 7.3) 추천 구성</td></tr>
+          <tr><td>SG Model</td><td class="muted">-</td><td>C12S</td><td>C32XS</td><td>C32S</td><td>C28M</td></tr>
+          <tr><td>Instances</td><td class="muted">-</td><td>1</td><td>1</td><td>2</td><td>4</td></tr>
+          <tr><td>Total Cores</td><td class="muted">-</td><td>12</td><td>32</td><td>64</td><td>112</td></tr>
+          <tr><td>Total RAM</td><td class="muted">-</td><td>48</td><td>80</td><td>320</td><td>896</td></tr>
+          <tr><td>Total Disk</td><td class="muted">-</td><td>400</td><td>400</td><td>1600</td><td>4800</td></tr>
+          <tr><td>Total Connection</td><td class="muted">-</td><td>75,000</td><td>125,000</td><td>500,000</td><td>1,400,000</td></tr>
+          <tr class="mp-section-row"><td colspan="6">SSL 부하율별 처리량 (Mbps)</td></tr>
+          <tr><td>0% SSL</td><td id="cmpOld0">2910.4</td><td>975</td><td>2512</td><td>4903</td><td>7500</td></tr>
+          <tr><td>25% SSL</td><td id="cmpOld1">1803.2</td><td>658</td><td>1654</td><td>3323</td><td>4800</td></tr>
+          <tr><td>50% SSL</td><td id="cmpOld2">1396.8</td><td>573</td><td>1447</td><td>2901</td><td>4200</td></tr>
+          <tr><td>75% SSL</td><td id="cmpOld3">1065.6</td><td>495</td><td>1240</td><td>2479</td><td>3600</td></tr>
+          <tr><td>100% SSL</td><td id="cmpOld4">884.8</td><td>334</td><td>866</td><td>1705</td><td>2400</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <div class="chart-wrap cmp-chart">
+        <div id="perfChart"></div>
+      </div>
     </div>
 
-    <div style="overflow-x:auto;">
-    <table>
-      <thead>
-        <tr>
-          <th>Performance</th>
-          <th>
-            <select id="oldModelSel" class="model-select">
-              <option value="S200-10">S200-10</option>
-              <option value="S200-20">S200-20</option>
-              <option value="S200-30">S200-30</option>
-              <option value="S200-40">S200-40</option>
-              <option value="S400-20">S400-20</option>
-              <option value="S400-30">S400-30</option>
-              <option value="S400-40">S400-40</option>
-              <option value="S500-10">S500-10</option>
-              <option value="S500-20">S500-20</option>
-              <option value="S500-30" selected>S500-30</option>
-            </select>
-          </th>
-          <th>SSP-S210-10</th>
-          <th>SSP-S410-20B</th>
-          <th>SSP-S410-40B</th>
-          <th>SSP-S620-10 (추정)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="mp-section-row"><td colspan="6">Max Performance (SG 7.3) 추천 구성</td></tr>
-        <tr><td>SG Model</td><td class="muted">-</td><td>C12S</td><td>C32XS</td><td>C32S</td><td>C28M</td></tr>
-        <tr><td>Instances</td><td class="muted">-</td><td>1</td><td>1</td><td>2</td><td>4</td></tr>
-        <tr><td>Total Cores</td><td class="muted">-</td><td>12</td><td>32</td><td>64</td><td>112</td></tr>
-        <tr><td>Total RAM</td><td class="muted">-</td><td>48</td><td>80</td><td>320</td><td>896</td></tr>
-        <tr><td>Total Disk</td><td class="muted">-</td><td>400</td><td>400</td><td>1600</td><td>4800</td></tr>
-        <tr><td>Total Connection</td><td class="muted">-</td><td>75,000</td><td>125,000</td><td>500,000</td><td>1,400,000</td></tr>
-        <tr class="mp-section-row"><td colspan="6">SSL 부하율별 처리량 (Mbps)</td></tr>
-        <tr><td>0% SSL</td><td id="cmpOld0">2910.4</td><td>975</td><td>2512</td><td>4903</td><td>7500</td></tr>
-        <tr><td>25% SSL</td><td id="cmpOld1">1803.2</td><td>658</td><td>1654</td><td>3323</td><td>4800</td></tr>
-        <tr><td>50% SSL</td><td id="cmpOld2">1396.8</td><td>573</td><td>1447</td><td>2901</td><td>4200</td></tr>
-        <tr><td>75% SSL</td><td id="cmpOld3">1065.6</td><td>495</td><td>1240</td><td>2479</td><td>3600</td></tr>
-        <tr><td>100% SSL</td><td id="cmpOld4">884.8</td><td>334</td><td>866</td><td>1705</td><td>2400</td></tr>
-      </tbody>
-    </table>
-    </div>
     <div class="foot">* SSP 성능 측정 자료를 기반으로 계산된 구 모델 성능 추정치. 구 모델 열은 [선택 모델의 MAX THROUGHPUT] × [SSL 부하율별 계수]로 계산됩니다.</div>
   </div>
 
