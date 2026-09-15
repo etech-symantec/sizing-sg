@@ -83,7 +83,7 @@
 
 <!-- 공통 헤더 + 제목 + 버전 -->
 <script>
-  window.pageTitle = "SSP > ISG > SG 모델 조회";
+  window.pageTitle = "SSP & ISG Sizing Guide";
   window.pageVersion = "ver.2026.09.15";
 </script> 
 <script src="https://etech-symantec.github.io/header.js"></script>
@@ -92,45 +92,6 @@
 <div class="wrap">
   <div class="sub">호스트(SSP) 모델을 선택하고, <b>최소 Cores / RAM / Connections</b> 기준으로 필터링하세요. (미지원 0 인스턴스 항목은 자동 제외)
 </div>
-
-  <!-- 컨트롤 바 -->
-  <div class="bar" id="controlBar">
-    <div>
-      <label for="familySel">플랫폼 그룹</label>
-      <select id="familySel">
-        <option value="S210">S210</option>
-        <option value="S410" selected>S410</option>
-        <option value="S620">S620</option>
-      </select>
-    </div>
-
-    <div id="hostWrap">
-      <label for="hostSel">호스트(SSP) 모델</label>
-      <select id="hostSel"></select>
-    </div>
-	
-    <div class="right muted">업데이트: <span id="ts"></span></div>
-        <a class="nav-btn" href="https://techdocs.broadcom.com/us/en/symantec-security-software/web-and-network-security/integrated-secure-gateway/2-5/About-ISG/manage-applications/Platform-and-Performance-Reference/isg-platform-performance-sg.html" target="_blank" rel="noopener noreferrer">↗ 원본 TechDocs</a>
-
-  </div>
-
-  <!-- 필터 바 -->
-  <div class="bar" style="margin-top:10px">
-    <div>
-      <label for="minCores">최소 Cores</label>
-      <input id="minCores" type="number" min="0" step="1" placeholder="예: 8">
-    </div>
-    <div>
-      <label for="minRam">최소 RAM(GB)</label>
-      <input id="minRam" type="number" min="0" step="1" placeholder="예: 64">
-    </div>
-    <div>
-      <label for="minConn">최소 Connections</label>
-      <input id="minConn" type="number" min="0" step="1000" placeholder="예: 100000">
-    </div>
-    <button class="btn" id="applyBtn">필터 적용</button>
-    <button class="btn ghost" id="resetBtn">초기화</button>
-  </div>
 
   <!-- 비교표 (Max Performance 통합) -->
   <div class="card" style="margin-top:14px">
@@ -213,6 +174,41 @@
         </tbody>
       </table>
     </div>
+  </div>
+
+  <!-- 플랫폼 그룹 + 필터 통합 바 -->
+  <div class="bar" id="controlBar" style="margin-top:14px;flex-wrap:wrap">
+    <div>
+      <label for="familySel">플랫폼 그룹</label>
+      <select id="familySel">
+        <option value="S210">S210</option>
+        <option value="S410" selected>S410</option>
+        <option value="S620">S620</option>
+      </select>
+    </div>
+
+    <div id="hostWrap">
+      <label for="hostSel">호스트(SSP) 모델</label>
+      <select id="hostSel"></select>
+    </div>
+
+    <div>
+      <label for="minCores">최소 Cores</label>
+      <input id="minCores" type="number" min="0" step="1" placeholder="예: 8">
+    </div>
+    <div>
+      <label for="minRam">최소 RAM(GB)</label>
+      <input id="minRam" type="number" min="0" step="1" placeholder="예: 64">
+    </div>
+    <div>
+      <label for="minConn">최소 Connections</label>
+      <input id="minConn" type="number" min="0" step="1000" placeholder="예: 100000">
+    </div>
+    <button class="btn" id="applyBtn">필터 적용</button>
+    <button class="btn ghost" id="resetBtn">초기화</button>
+
+    <div class="right muted">업데이트: <span id="ts"></span></div>
+    <a class="nav-btn" href="https://techdocs.broadcom.com/us/en/symantec-security-software/web-and-network-security/integrated-secure-gateway/2-5/About-ISG/manage-applications/Platform-and-Performance-Reference/isg-platform-performance-sg.html" target="_blank" rel="noopener noreferrer">↗ 원본 TechDocs</a>
   </div>
 
   <div class="row-2col bottom-row">
