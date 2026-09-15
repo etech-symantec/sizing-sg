@@ -57,8 +57,10 @@
   .old-model-row.selected td{background:#dbeafe;font-weight:700}
   .model-select{appearance:none;background:var(--input);border:1px solid var(--line);color:var(--fg);padding:6px 10px;border-radius:8px;font-size:14px;font-weight:700}
   .chart-wrap{margin:14px 0 18px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px}
-  .cmp-layout{display:grid;grid-template-columns:45% 1fr;gap:16px;align-items:start;margin-top:10px}
-  .cmp-layout .cmp-chart{margin:0}
+  .cmp-layout{display:grid;grid-template-columns:45% 1fr;gap:16px;align-items:stretch;margin-top:10px}
+  .cmp-layout .cmp-chart{margin:0;display:flex;flex-direction:column}
+  .cmp-layout .cmp-chart #perfChart{flex:1;display:flex}
+  .cmp-layout .cmp-chart #perfChart svg{width:100%;height:100%}
   .cmp-layout .cmp-table table{font-size:13px}
   @media (max-width:1100px){ .cmp-layout{grid-template-columns:1fr} }
   .bottom-row table{font-size:12px}
@@ -513,14 +515,16 @@ function fmtVal(v){
 }
 
 /* ---- 순수 SVG 막대그래프 (외부 라이브러리 의존성 없음) ----
-   X축: 장비 모델 / 각 모델 그룹 내 막대: 0%,25%,50%,75%,100% SSL 순서 */
+   X축: 장비 모델 / 각 모델 그룹 내 막대: 0%,25%,50%,75%,100% SSL 순서
+   컨테이너(비교표 영역과 같은 높이) 전체를 채우도록 크기를 동적으로 계산 */
 function renderChart(model){
   const groupNames = [model+" (구 모델)","SSP-S210-10","SSP-S410-20B","SSP-S410-40B","SSP-S620-10 (추정)"];
   const groupData  = [computeOldValues(model), SSP_210_10, SSP_410_20B, SSP_410_40B, SSP_620_10]; // 각 배열: [0%,25%,50%,75%,100%]
 
-  const W = 980, H = 340;
+  const W = Math.max(360, chartHost.clientWidth  || 700);
+  const H = Math.max(260, chartHost.clientHeight || 400);
   const padL = 55, padR = 20, padT = 20, padB = 60;
-  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const plotW = W - padL - padR, plotH = H - 24 - padT - padB;
 
   const maxVal = Math.max(...groupData.flat());
   const niceMax = Math.ceil(maxVal/500)*500;
@@ -553,7 +557,7 @@ function renderChart(model){
       bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" fill="${SERIES_COLORS[s]}"><title>${groupNames[g]} · ${SSL_LABELS[s]}: ${v.toLocaleString()}</title></rect>`;
       if(barW>16) bars += `<text x="${(x+barW/2).toFixed(1)}" y="${(y-4).toFixed(1)}" font-size="8" fill="#374151" text-anchor="middle">${v>=1000?Math.round(v).toLocaleString():v}</text>`;
     }
-    xLabels += `<text x="${(groupX+groupW/2).toFixed(1)}" y="${H-padB+18}" font-size="11" fill="#111827" text-anchor="middle">${groupNames[g]}</text>`;
+    xLabels += `<text x="${(groupX+groupW/2).toFixed(1)}" y="${padT+plotH+18}" font-size="11" fill="#111827" text-anchor="middle">${groupNames[g]}</text>`;
   }
 
   let legend = "";
@@ -564,7 +568,7 @@ function renderChart(model){
   });
 
   chartHost.innerHTML = `
-    <svg viewBox="0 0 ${W} ${H+24}" width="100%" style="max-width:${W}px;display:block;margin:0 auto;font-family:inherit">
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="display:block;font-family:inherit">
       <g transform="translate(0,4)">${legend}</g>
       <g transform="translate(0,24)">
         ${gridLines}${yLabels}
@@ -588,6 +592,12 @@ function updateComparison(model){
 
 oldModelSel.addEventListener("change", ()=> updateComparison(oldModelSel.value));
 baseRows.forEach(r=> r.addEventListener("click", ()=> updateComparison(r.dataset.model)));
+
+let resizeTimer;
+window.addEventListener("resize", ()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(()=> renderChart(oldModelSel.value), 150);
+});
 
 /* ---- 참고기준 모달 ---- */
 const refInfoBtn = document.getElementById("refInfoBtn");
